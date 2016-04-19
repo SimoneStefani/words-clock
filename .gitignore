@@ -1,0 +1,11 @@
+*.o
+*.a
+*.elf
+*.hex
+.deps
+
+*.sublime-project
+*.sublime-workspace
+
+*.psd
+*.DS_Store
