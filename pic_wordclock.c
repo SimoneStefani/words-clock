@@ -11,6 +11,7 @@
 
 void shiftOut(char dataPin, char clockPin, char val);
 void initPorts(void);
+void initTimer0Interrupt(void);
 
 /**
  * Interrupt service routine
@@ -19,7 +20,8 @@ void initPorts(void);
 interrupt isr(void) {
     int_save_registers
     // interrupt routine here
-    //RABIF = 0;
+
+    T0IF = 0; // clear interrupt flag
     int_restore_registers
 }
 
@@ -29,10 +31,10 @@ interrupt isr(void) {
 void main( void)
 {
     initPorts();
-    //IOCA.5 = 1; // interrupt on RA5 pin enable
-    //IOCA.4 = 1; // interrupt on RA4 pin enable
-    RABIE = 1; // local interrupt enable
-    GIE = 1; // global interrupt enable
+    initTimer0Interrupt();
+    
+    // global interrupt enable
+    GIE = 1;
 
     while(1) {
         // do something between interrupts
@@ -46,6 +48,25 @@ void initPorts(void) {
 	TRISC.0 = 0;
 	TRISC.1 = 0;
 	TRISC.2 = 0;
+}
+
+/**
+ * Initialise timer0 with interrupts
+ */
+void initTimer0Interrupt(void) {
+    // prescaler is assigned to the Timer0 module
+    PSA = 0; 
+
+    // prescaling 111 = 1:256
+    PS0 = 1; 
+    PS1 = 1;
+    PS2 = 1;
+
+    // set timer value
+    TMR0 = 5;
+
+    // enable timer0 overflow interrupt
+    T0IE = 1;
 }
 
 /**
