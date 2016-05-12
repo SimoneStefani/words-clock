@@ -38,37 +38,39 @@
  *  23 - SR2.7 - undefined pew
  */
 
- #DEFINE IT SR0.0 = 1
- #DEFINE IS SR0.1 = 1
- #DEFINE MTEN SR0.2 = 1
- #DEFINE HALF SR0.3 = 1
- #DEFINE QUARTER SR0.4 = 1
- #DEFINE TWENTY SR0.5 = 1
- #DEFINE MFIVE SR0.6 = 1
- #DEFINE MINUTES SR0.7 = 1
- #DEFINE PAST SR1.0 = 1
- #DEFINE TO SR1.1 = 1
- #DEFINE ONE SR1.2 = 1
- #DEFINE TWO SR1.3 = 1
- #DEFINE THREE SR1.4 = 1
- #DEFINE FOUR SR1.5 = 1
- #DEFINE HFIVE SR1.6 = 1
- #DEFINE SIX SR1.7 = 1
- #DEFINE SEVEN SR2.0 = 1
- #DEFINE EIGHT SR2.1 = 1
- #DEFINE NINE SR2.2 = 1
- #DEFINE HTEN SR2.3 = 1
- #DEFINE ELEVEN SR2.4 = 1
- #DEFINE TWELVE SR2.5 = 1
- #DEFINE OCLOCK SR2.6 = 1
- #DEFINE PEW SR2.7 = 1
+#define IT SR0.0 = 1
+#define IS SR0.1 = 1
+#define MTEN SR0.2 = 1
+#define HALF SR0.3 = 1
+#define QUARTER SR0.4 = 1
+#define TWENTY SR0.5 = 1
+#define MFIVE SR0.6 = 1
+#define MINUTES SR0.7 = 1
+#define PAST SR1.0 = 1
+#define TO SR1.1 = 1
+#define ONE SR1.2 = 1
+#define TWO SR1.3 = 1
+#define THREE SR1.4 = 1
+#define FOUR SR1.5 = 1
+#define HFIVE SR1.6 = 1
+#define SIX SR1.7 = 1
+#define SEVEN SR2.0 = 1
+#define EIGHT SR2.1 = 1
+#define NINE SR2.2 = 1
+#define HTEN SR2.3 = 1
+#define ELEVEN SR2.4 = 1
+#define TWELVE SR2.5 = 1
+#define OCLOCK SR2.6 = 1
+#define PEW SR2.7 = 1
  
 /* General */
-#define LSBFIRST        1
 #define DATA_PORT       PORTC.0
 #define CLOCK_PORT      PORTC.1
 #define STROBE_PORT     PORTC.2
+#define MINUTES_BUTTON  PORTC.3
+#define HOURS_BUTTON    PORTC.4
 
+/* Functions */
 void shiftOut(char dataPin, char clockPin, char val);
 void initPorts(void);
 void initTimer0Interrupt(void);
@@ -217,6 +219,8 @@ void initPorts(void) {
     TRISC.0 = 0;
     TRISC.1 = 0;
     TRISC.2 = 0;
+    TRISC.3 = 0;
+    TRISC.4 = 0;
 }
 
 /**
@@ -240,10 +244,10 @@ void initTimer0Interrupt(void) {
 
 /**
  * Shifts out a byte of data one bit at a time. Starts from the most significant bit. 
- * Each bit is written in turn to a dataPin, after which a clockPin is pulsed
+ * Each bit is written in turn to a DATA_PORT, after which a CLOCK_PORT is pulsed
  * to indicate that the bit is available.
  */
-void shiftOut(char dataPin, char clockPin, char val) {
+void shiftOut(char val) {
     int i;
     for (i = 0; i < 8; i++)  {
         DATA_PORT = !!(val & (1 << (7 - i))); // The double bang !! implicitly cast to bool: will it work?
@@ -256,9 +260,12 @@ void shiftOut(char dataPin, char clockPin, char val) {
  * Update time.
  */
 void updateView(void) {
-    shiftOut(0, 0, (char) SR0);
-    shiftOut(0, 0, (char) SR1);
-    shiftOut(0, 0, (char) SR2);
+    shiftOut((char) SR0);
+    shiftOut((char) SR1);
+    shiftOut((char) SR2);
+    STROBE_PORT = 1;
+    nop();
+    STROBE_PORT = 0;
 }
 
 /**
