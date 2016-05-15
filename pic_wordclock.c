@@ -70,7 +70,7 @@
 #define HOURS_BUTTON    PORTC.4
 
 /* Functions */
-void shiftOut(char dataPin, char clockPin, char val);
+void shiftOut(char val);
 void initPorts(void);
 void initTimer0Interrupt(void);
 void turnOffLeds(void);
@@ -89,8 +89,6 @@ interrupt isr(void) {
     // interrupt routine here
     
     turnOffLeds();
-    IT
-    IS
     
     // HOURS
     switch (state_hours) {
@@ -129,9 +127,10 @@ interrupt isr(void) {
             break;
         case 0:
             TWELVE
+            // Eventual time adjustments here
             break;
         default:
-            PEW
+            PEW0
     }
     
     // MINUTES
@@ -187,8 +186,11 @@ interrupt isr(void) {
             break;
     }
     
+    if ((state_minutes + 1) % 12 = 0) {
+        state_hours = (state_hours + 1) % 12;
+    }
     state_minutes = (state_minutes + 1) % 12;
-    state_hours = (state_hours + 1) % 12;
+
     updateView();
     
     T0IF = 0; // clear interrupt flag
