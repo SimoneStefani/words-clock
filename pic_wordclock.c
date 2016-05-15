@@ -9,25 +9,25 @@
  *
  *  0bxx.xxxxx.xxx.xxxxxxxxxx.x.00
  *
- *  00 - SR0.0 - "IT"
- *  01 - SR0.1 - "IS"
+ *  00 - "IT" - Hard wired
+ *  01 - "IS" - Hard wired
  *
- *  02 - SR0.2 - "TEN"
- *  03 - SR0.3 - "HALF"
- *  04 - SR0.4 - "QUARTER"
- *  05 - SR0.5 - "TWENTZ"
- *  06 - SR0.6 - "FIVE"
+ *  02 - SR0.0 - "TEN"
+ *  03 - SR0.1 - "HALF"
+ *  04 - SR0.2 - "QUARTER"
+ *  05 - SR0.3 - "TWENTZ"
+ *  06 - SR0.4 - "FIVE"
  *
- *  07 - SR0.7 - "MINUTES"
- *  08 - SR1.0 - "PAST"
- *  09 - SR1.1 - "TO"
+ *  07 - SR0.5 - "MINUTES"
+ *  08 - SR0.6 - "PAST"
+ *  09 - SR1.0 - "TO"
  *
- *  10 - SR1.2 - "ONE"
- *  11 - SR1.3 - "TWO"
- *  12 - SR1.4 - "THREE"
- *  13 - SR1.5 - "FOUR"
- *  14 - SR1.6 - "FIVE"
- *  15 - SR1.7 - "SIX"
+ *  10 - SR1.1 - "ONE"
+ *  11 - SR1.2 - "TWO"
+ *  12 - SR1.3 - "THREE"
+ *  13 - SR1.4 - "FOUR"
+ *  14 - SR1.5 - "FIVE"
+ *  15 - SR1.6 - "SIX"
  *  16 - SR2.0 - "SEVEN"
  *  17 - SR2.1 - "EIGHT"
  *  18 - SR2.2 - "NINE"
@@ -35,25 +35,24 @@
  *  20 - SR2.4 - "ELEVEN"
  *  21 - SR2.5 - "TWELVE"
  *  22 - SR2.6 - "OCLOCK"
- *  23 - SR2.7 - undefined pew
  */
 
-#define IT SR0.0 = 1
-#define IS SR0.1 = 1
-#define MTEN SR0.2 = 1
-#define HALF SR0.3 = 1
-#define QUARTER SR0.4 = 1
-#define TWENTY SR0.5 = 1
-#define MFIVE SR0.6 = 1
-#define MINUTES SR0.7 = 1
-#define PAST SR1.0 = 1
-#define TO SR1.1 = 1
-#define ONE SR1.2 = 1
-#define TWO SR1.3 = 1
-#define THREE SR1.4 = 1
-#define FOUR SR1.5 = 1
-#define HFIVE SR1.6 = 1
-#define SIX SR1.7 = 1
+#define MTEN SR0.0 = 1
+#define HALF SR0.1 = 1
+#define QUARTER SR0.2 = 1
+#define TWENTY SR0.3 = 1
+#define MFIVE SR0.4 = 1
+#define MINUTES SR0.5 = 1
+#define PAST SR0.6 = 1
+#define PEW0 SR0.7 = 1
+#define TO SR1.0 = 1
+#define ONE SR1.1 = 1
+#define TWO SR1.2 = 1
+#define THREE SR1.3 = 1
+#define FOUR SR1.4 = 1
+#define HFIVE SR1.5 = 1
+#define SIX SR1.6 = 1
+#define PEW1 SR1.7 = 1
 #define SEVEN SR2.0 = 1
 #define EIGHT SR2.1 = 1
 #define NINE SR2.2 = 1
@@ -61,7 +60,7 @@
 #define ELEVEN SR2.4 = 1
 #define TWELVE SR2.5 = 1
 #define OCLOCK SR2.6 = 1
-#define PEW SR2.7 = 1
+#define PEW2 SR2.7 = 1
  
 /* General */
 #define DATA_PORT       PORTC.0
@@ -264,7 +263,7 @@ void updateView(void) {
     shiftOut((char) SR1);
     shiftOut((char) SR2);
     STROBE_PORT = 1;
-    nop();
+    nop2();
     STROBE_PORT = 0;
 }
 
