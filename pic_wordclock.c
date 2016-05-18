@@ -9,8 +9,8 @@
  *
  *  0bxx.xxxxx.xxx.xxxxxxxxxx.x.00
  *
- *  00 - "IT" - Hard wired
- *  01 - "IS" - Hard wired
+ *  00 - "IT" - Hardwired
+ *  01 - "IS" - Hardwired
  *
  *  02 - SR0.0 - "TEN"
  *  03 - SR0.1 - "HALF"
@@ -79,6 +79,9 @@ void turnOffLeds(void);
 int state_minutes = 0;
 int state_hours = 0;
 int SR0, SR1, SR2; // shift register X
+int hour = 5;
+int minute = 55; 
+int second = 00;
 
 /**
  * Interrupt service routine
@@ -209,7 +212,13 @@ void main( void)
     GIE = 1;
 
     while(1) {
-        // do something between interrupts
+        // poll the T0IF flag to see if TMR0 has overflowed
+        if (T0IF) {
+            second++;   // increment second variable by one
+            T0IF = 0;   // clear the T0IF flag
+        }
+
+        // Timer logic here
     }
 }
 
