@@ -71,14 +71,16 @@
 
 /* Functions */
 void shiftOut(char val);
+void shiftOutSingle(int b);
 void initPorts(void);
 void initTimer0Interrupt(void);
+void updateView(void);
 void turnOffLeds(void);
 
 /* Timing */
 int unsigned postScaler;
-int state_minutes;
-int state_hours;
+int unsigned state_minutes;
+int unsigned state_hours;
 int VSR0, VSR1, VSR2; // shift register X
 int hour;
 int minute; 
@@ -95,131 +97,127 @@ interrupt Timer0_ISR(void) {
 	postScaler += 1;
 	postScaler = postScaler % 50;
 	
-	if (postScaler == 0) {
-		PORTC.1 = !PORTC.1;
-	}else if (postScaler == 25) {
+	/*if (postScaler == 0) {
+		PORTC.1 = 1;
+	}
+	else if (postScaler == 25) {
 		PORTC.1 = 0;
+	}*/
+	
+	int unsigned temp = 0;
+	if (postScaler == 0) {
+		state_minutes += 1;
+		temp = state_minutes % 12;
+		if (temp == 0) {
+			state_hours += 1;
+			state_hours = state_hours % 12;
+		}
+		state_minutes = temp;
+		
+		
+		turnOffLeds();
+		
+		// HOURS
+		switch (state_hours) {
+			case 1:
+				ONE;
+				break;
+			case 2:
+				TWO;
+				break;
+			case 3:
+				THREE;
+				break;
+			case 4:
+				FOUR;
+				break;
+			case 5:
+				HFIVE;
+				break;
+			case 6:
+				SIX;
+				break;
+			case 7:
+				SEVEN;
+				break;
+			case 8:
+				EIGHT;
+				break;
+			case 9:
+				NINE;
+				break;
+			case 10:
+				HTEN;
+				break;
+			case 11:
+				ELEVEN;
+				break;
+			case 0:
+				TWELVE;
+				// Eventual time adjustments here
+				break;
+			default:
+				PEW0;
+		}
+		
+		// MINUTES
+		switch (state_minutes) {
+			case 0:
+				OCLOCK;
+				break;
+			case 1:
+				MFIVE;
+				PAST;
+				break;
+			case 2:
+				MTEN;
+				PAST;
+				break;
+			case 3:
+				QUARTER;
+				PAST;
+				break;
+			case 4:
+				TWENTY;
+				PAST;
+				break;
+			case 5:
+				TWENTY;
+				MFIVE;
+				PAST;
+				break;
+			case 6:
+				HALF;
+				PAST;
+				break;
+			case 7:
+				TWENTY;
+				MFIVE;
+				TO;
+				break;
+			case 8:
+				TWENTY;
+				TO;
+				break;
+			case 9:
+				QUARTER;
+				TO;
+				break;
+			case 10:
+				MTEN;
+				TO;
+				break;
+			case 11:
+				MFIVE;
+				TO;
+				break;
+		}
+		
+		updateView();
 	}
 
     int_restore_registers
 	T0IF = 0; // clear interrupt flag
-	
-	/*
-	
-	// check buttons
-	 
-	// check if 5minutes passed
-	//if (!55==55) { return; }
-
-	if (((state_minutes + 1) % 12) == 0) {
-        state_hours = (state_hours + 1) % 12;
-    }
-    state_minutes = (state_minutes + 1) % 12;
-    
-    turnOffLeds();
-	
-    // HOURS
-    switch (state_hours) {
-        case 1:
-            ONE;
-            break;
-        case 2:
-            TWO;
-            break;
-        case 3:
-            THREE;
-            break;
-        case 4:
-            FOUR;
-            break;
-        case 5:
-            HFIVE;
-            break;
-        case 6:
-            SIX;
-            break;
-        case 7:
-            SEVEN;
-            break;
-        case 8:
-            EIGHT;
-            break;
-        case 9:
-            NINE;
-            break;
-        case 10:
-            HTEN;
-            break;
-        case 11:
-            ELEVEN;
-            break;
-        case 0:
-            TWELVE;
-            // Eventual time adjustments here
-            break;
-        default:
-            PEW0;
-    }
-    
-    // MINUTES
-    switch (state_minutes) {
-        case 0:
-            OCLOCK;
-            break;
-        case 1:
-            MFIVE;
-            PAST;
-            break;
-        case 2:
-            MTEN;
-            PAST;
-            break;
-        case 3:
-            QUARTER;
-            PAST;
-            break;
-        case 4:
-            TWENTY;
-            PAST;
-            break;
-        case 5:
-            TWENTY;
-            MFIVE;
-            PAST;
-            break;
-        case 6:
-            HALF;
-            PAST;
-            break;
-        case 7:
-            TWENTY;
-            MFIVE;
-            TO;
-            break;
-        case 8:
-            TWENTY;
-            TO;
-            break;
-        case 9:
-            QUARTER;
-            TO;
-            break;
-        case 10:
-            MTEN;
-            TO;
-            break;
-        case 11:
-            MFIVE;
-            TO;
-            break;
-    }
-    
-    //updateView();
-    
-    T0IF = 0; // clear interrupt flag
-    int_restore_registers
-	
-	*/
 }
 
 /**
@@ -277,18 +275,39 @@ void initTimer0Interrupt(void) {
 }
 
 /**
+ * Helper function for shiftOut.
+ */
+void shiftOutSingle(int b) {
+	DATA_PORT = b;
+	CLOCK_PORT = 1;
+	nop();
+	CLOCK_PORT = 0;
+}
+
+/**
  * Shifts out a byte of data one bit at a time. Starts from the most significant bit. 
  * Each bit is written in turn to a DATA_PORT, after which a CLOCK_PORT is pulsed
  * to indicate that the bit is available.
  */
 void shiftOut(char val) {
-    int i;
-    for (i = 0; i < 8; i++)  {
-        //DATA_PORT = !!(val & (1 << (7 - i))); // The double bang !! implicitly cast to bool: will it work?
+	shiftOutSingle(val.7);
+	shiftOutSingle(val.6);
+	shiftOutSingle(val.5);
+	shiftOutSingle(val.4);
+	shiftOutSingle(val.3);
+	shiftOutSingle(val.2);
+	shiftOutSingle(val.1);
+	shiftOutSingle(val.0);
+
+	// NOT COMPILABLE
+    /*for (i = 7; i <= 0; i--)  {
+		mask = 1 << i;
+        DATA_PORT = val & mask;
+		
         CLOCK_PORT = 1;
 		nop();
         CLOCK_PORT = 0;      
-    }
+    }*/
 }
 
 /**
