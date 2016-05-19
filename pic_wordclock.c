@@ -83,6 +83,7 @@ void turnOffLeds(void);
 
 /* Timing */
 int unsigned postScaler;
+int unsigned postPostScaler;
 int unsigned state_minutes;
 int unsigned state_hours;
 int VSR0, VSR1, VSR2; // shift register X
@@ -95,8 +96,8 @@ interrupt Timer0_ISR(void) {
     int_save_registers
 	
 	postScaler += 1;
-	postScaler = postScaler % 50;
-	
+	postScaler = postScaler % 61;
+
 	int delay;
 	delay = postScaler % 3;
 	// Read button input
@@ -120,10 +121,14 @@ interrupt Timer0_ISR(void) {
 
 	// Update clock
 	if (postScaler == 0) {
-		increaseClock();
-		turnOffLeds();
-		updateShiftRegisters();
-		updateView();
+		postPostScaler += 1;
+		postPostScaler = postPostScaler % 15;
+		if (postPostScaler == 0) {
+			increaseClock();
+			turnOffLeds();
+			updateShiftRegisters();
+			updateView();
+		}
 	}
 	
     int_restore_registers
@@ -137,6 +142,7 @@ void main(void) {
     initPorts();
     initTimer0Interrupt();
 	postScaler = 0;
+	postPostScaler = 0;
 	
 	state_minutes = 0;
 	state_hours = 0;
@@ -154,7 +160,6 @@ void initPorts(void) {
     TRISC.0 = 0;
     TRISC.1 = 0;
     TRISC.2 = 0;
-    TRISC.3 = 1;
     TRISC.4 = 1;
 	TRISC.5 = 1;
 }
