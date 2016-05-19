@@ -82,9 +82,6 @@ int unsigned postScaler;
 int unsigned state_minutes;
 int unsigned state_hours;
 int VSR0, VSR1, VSR2; // shift register X
-int hour;
-int minute; 
-int second;
 
 /**
  * Interrupt service routine
@@ -113,7 +110,6 @@ interrupt Timer0_ISR(void) {
 			state_hours = state_hours % 12;
 		}
 		state_minutes = temp;
-		
 		
 		turnOffLeds();
 		
@@ -167,10 +163,12 @@ interrupt Timer0_ISR(void) {
 				break;
 			case 1:
 				MFIVE;
+				MINUTES;
 				PAST;
 				break;
 			case 2:
 				MTEN;
+				MINUTES;
 				PAST;
 				break;
 			case 3:
@@ -179,11 +177,13 @@ interrupt Timer0_ISR(void) {
 				break;
 			case 4:
 				TWENTY;
+				MINUTES;
 				PAST;
 				break;
 			case 5:
 				TWENTY;
 				MFIVE;
+				MINUTES;
 				PAST;
 				break;
 			case 6:
@@ -193,10 +193,12 @@ interrupt Timer0_ISR(void) {
 			case 7:
 				TWENTY;
 				MFIVE;
+				MINUTES;
 				TO;
 				break;
 			case 8:
 				TWENTY;
+				MINUTES;
 				TO;
 				break;
 			case 9:
@@ -205,10 +207,12 @@ interrupt Timer0_ISR(void) {
 				break;
 			case 10:
 				MTEN;
+				MINUTES;
 				TO;
 				break;
 			case 11:
 				MFIVE;
+				MINUTES;
 				TO;
 				break;
 		}
@@ -227,12 +231,9 @@ void main( void)
 {
     initPorts();
     initTimer0Interrupt();
-	
+
 	state_minutes = 0;
 	state_hours = 0;
-	hour = 5;
-	minute = 55; 
-	second = 00;
 
 	postScaler = 0;
 	PORTC.1 = 0;
@@ -260,7 +261,6 @@ void initPorts(void) {
 void initTimer0Interrupt(void) {
     // prescaler is assigned to the Timer0 module
     //PSA = 0; 
-
     // prescaling 111 = 1:256
     //PS0 = 1; 
     //PS1 = 1;
@@ -298,7 +298,7 @@ void shiftOut(char val) {
 	shiftOutSingle(val.2);
 	shiftOutSingle(val.1);
 	shiftOutSingle(val.0);
-
+	
 	// NOT COMPILABLE
     /*for (i = 7; i <= 0; i--)  {
 		mask = 1 << i;
@@ -314,9 +314,10 @@ void shiftOut(char val) {
  * Update time.
  */
 void updateView(void) {
-    shiftOut((char) VSR0);
-    shiftOut((char) VSR1);
     shiftOut((char) VSR2);
+	shiftOut((char) VSR1);
+	shiftOut((char) VSR0);
+    
     STROBE_PORT = 1;
     nop2();
     STROBE_PORT = 0;
