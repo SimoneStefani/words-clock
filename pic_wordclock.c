@@ -149,8 +149,19 @@ void main(void) {
 
     // global interrupt enable
     GIE = 1;
+
+    ADCON1 = 0b0.101.0000; // AD conversion clock 'fosc/16'
+    ADCON0 = 0b0.0.1001.0.1; 
+    T2CON = 0b0.0000.1.01;
+    CCP1CON = 0b01.00.1100;
+    PR2 = 255;   
 	
-	while(1) {}
+	while(1) {
+		GO = 1;
+    	while(GO);
+    	Duty = ADRESH;
+    	CCPR1L = (unsigned int) Duty;
+	}
 }
 
 /**
@@ -162,6 +173,10 @@ void initPorts(void) {
     TRISC.2 = 0;
     TRISC.4 = 1;
 	TRISC.5 = 1;
+
+	TRISC.3  = 0; // RC3 PWM output
+	TRISC.7  = 1; // RC7 AN9 Pot input
+  	ANSELH.1 = 1; // AN9 analog input
 }
 
 /**
