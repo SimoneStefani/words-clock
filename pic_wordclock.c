@@ -66,14 +66,18 @@
 #define DATA_PORT       PORTC.0
 #define CLOCK_PORT      PORTC.1
 #define STROBE_PORT     PORTC.2
-#define MINUTES_BUTTON  PORTC.3
+#define MINUTES_BUTTON  PORTC.5
 #define HOURS_BUTTON    PORTC.4
 
 /* Functions */
+void increaseClock(void);
+void increaseClockByHour(void);
+//void decreaseClock(void);
 void shiftOut(char val);
 void shiftOutSingle(int b);
 void initPorts(void);
 void initTimer0Interrupt(void);
+void updateShiftRegisters(void);
 void updateView(void);
 void turnOffLeds(void);
 
@@ -89,137 +93,39 @@ int VSR0, VSR1, VSR2; // shift register X
 #pragma origin 4
 interrupt Timer0_ISR(void) {
     int_save_registers
-    // interrupt routine here
 	
 	postScaler += 1;
 	postScaler = postScaler % 50;
 	
-	/*if (postScaler == 0) {
-		PORTC.1 = 1;
-	}
-	else if (postScaler == 25) {
-		PORTC.1 = 0;
-	}*/
-	
-	int unsigned temp = 0;
-	if (postScaler == 0) {
-		state_minutes += 1;
-		temp = state_minutes % 12;
-		if (temp == 0) {
-			state_hours += 1;
-			state_hours = state_hours % 12;
-		}
-		state_minutes = temp;
-		
+	int delay;
+	delay = postScaler % 3;
+	// Read button input
+	if (HOURS_BUTTON && delay == 0) {
+		nop2();
+		increaseClockByHour();
 		turnOffLeds();
-		
-		// HOURS
-		switch (state_hours) {
-			case 1:
-				ONE;
-				break;
-			case 2:
-				TWO;
-				break;
-			case 3:
-				THREE;
-				break;
-			case 4:
-				FOUR;
-				break;
-			case 5:
-				HFIVE;
-				break;
-			case 6:
-				SIX;
-				break;
-			case 7:
-				SEVEN;
-				break;
-			case 8:
-				EIGHT;
-				break;
-			case 9:
-				NINE;
-				break;
-			case 10:
-				HTEN;
-				break;
-			case 11:
-				ELEVEN;
-				break;
-			case 0:
-				TWELVE;
-				// Eventual time adjustments here
-				break;
-			default:
-				PEW0;
-		}
-		
-		// MINUTES
-		switch (state_minutes) {
-			case 0:
-				OCLOCK;
-				break;
-			case 1:
-				MFIVE;
-				MINUTES;
-				PAST;
-				break;
-			case 2:
-				MTEN;
-				MINUTES;
-				PAST;
-				break;
-			case 3:
-				QUARTER;
-				PAST;
-				break;
-			case 4:
-				TWENTY;
-				MINUTES;
-				PAST;
-				break;
-			case 5:
-				TWENTY;
-				MFIVE;
-				MINUTES;
-				PAST;
-				break;
-			case 6:
-				HALF;
-				PAST;
-				break;
-			case 7:
-				TWENTY;
-				MFIVE;
-				MINUTES;
-				TO;
-				break;
-			case 8:
-				TWENTY;
-				MINUTES;
-				TO;
-				break;
-			case 9:
-				QUARTER;
-				TO;
-				break;
-			case 10:
-				MTEN;
-				MINUTES;
-				TO;
-				break;
-			case 11:
-				MFIVE;
-				MINUTES;
-				TO;
-				break;
-		}
-		
+		updateShiftRegisters();
 		updateView();
+		nop2();
+	}
+	
+	if (MINUTES_BUTTON && delay == 0) {
+		nop2();
+		increaseClock();
+		turnOffLeds();
+		updateShiftRegisters();
+		updateView();
+		nop2();
 	}
 
+	// Update clock
+	if (postScaler == 0) {
+		increaseClock();
+		turnOffLeds();
+		updateShiftRegisters();
+		updateView();
+	}
+	
     int_restore_registers
 	T0IF = 0; // clear interrupt flag
 }
@@ -227,17 +133,14 @@ interrupt Timer0_ISR(void) {
 /**
  * Main routine
  */
-void main( void)
-{
+void main(void) {
     initPorts();
     initTimer0Interrupt();
-
+	postScaler = 0;
+	
 	state_minutes = 0;
 	state_hours = 0;
 
-	postScaler = 0;
-	PORTC.1 = 0;
-    
     // global interrupt enable
     GIE = 1;
 	
@@ -251,8 +154,9 @@ void initPorts(void) {
     TRISC.0 = 0;
     TRISC.1 = 0;
     TRISC.2 = 0;
-    TRISC.3 = 0;
-    TRISC.4 = 0;
+    TRISC.3 = 1;
+    TRISC.4 = 1;
+	TRISC.5 = 1;
 }
 
 /**
@@ -311,6 +215,115 @@ void shiftOut(char val) {
 }
 
 /**
+ * Update shift register values
+ */
+void updateShiftRegisters(void) {
+    // HOURS
+	switch (state_hours) {
+		case 1:
+			ONE;
+			break;
+		case 2:
+			TWO;
+			break;
+		case 3:
+			THREE;
+			break;
+		case 4:
+			FOUR;
+			break;
+		case 5:
+			HFIVE;
+			break;
+		case 6:
+			SIX;
+			break;
+		case 7:
+			SEVEN;
+			break;
+		case 8:
+			EIGHT;
+			break;
+		case 9:
+			NINE;
+			break;
+		case 10:
+			HTEN;
+			break;
+		case 11:
+			ELEVEN;
+			break;
+		case 0:
+			TWELVE;
+			// Eventual time adjustments here
+			break;
+		default:
+			PEW0;
+	}
+	
+	// MINUTES
+	switch (state_minutes) {
+		case 0:
+			OCLOCK;
+			break;
+		case 1:
+			MFIVE;
+			MINUTES;
+			PAST;
+			break;
+		case 2:
+			MTEN;
+			MINUTES;
+			PAST;
+			break;
+		case 3:
+			QUARTER;
+			PAST;
+			break;
+		case 4:
+			TWENTY;
+			MINUTES;
+			PAST;
+			break;
+		case 5:
+			TWENTY;
+			MFIVE;
+			MINUTES;
+			PAST;
+			break;
+		case 6:
+			HALF;
+			PAST;
+			break;
+		case 7:
+			TWENTY;
+			MFIVE;
+			MINUTES;
+			TO;
+			break;
+		case 8:
+			TWENTY;
+			MINUTES;
+			TO;
+			break;
+		case 9:
+			QUARTER;
+			TO;
+			break;
+		case 10:
+			MTEN;
+			MINUTES;
+			TO;
+			break;
+		case 11:
+			MFIVE;
+			MINUTES;
+			TO;
+			break;
+	}
+}
+
+/**
  * Update time.
  */
 void updateView(void) {
@@ -331,4 +344,26 @@ void turnOffLeds(void) {
     VSR1 = 0;
     VSR2 = 0;
     updateView();
+}
+
+/**
+ * Increase clock state by one.
+ */
+void increaseClock(void) {
+	int unsigned temp = 0;
+    state_minutes += 1;
+	temp = state_minutes % 12;
+	if (temp == 0) {
+		state_hours += 1;
+		state_hours = state_hours % 12;
+	}
+	state_minutes = temp;
+}
+
+/**
+ * Increase clock state by one.
+ */
+void increaseClockByHour(void) {
+	state_hours += 1;
+	state_hours = state_hours % 12;
 }
