@@ -12,214 +12,145 @@
  *  00 - "IT" - Hardwired
  *  01 - "IS" - Hardwired
  *
- *  02 - SR0.0 - "TEN"
- *  03 - SR0.1 - "HALF"
- *  04 - SR0.2 - "QUARTER"
- *  05 - SR0.3 - "TWENTZ"
- *  06 - SR0.4 - "FIVE"
+ *  02 - VSR0.0 - "TEN"
+ *  03 - VSR0.1 - "HALF"
+ *  04 - VSR0.2 - "QUARTER"
+ *  05 - VSR0.3 - "TWENTZ"
+ *  06 - VSR0.4 - "FIVE"
  *
- *  07 - SR0.5 - "MINUTES"
- *  08 - SR0.6 - "PAST"
- *  09 - SR1.0 - "TO"
+ *  07 - VSR0.5 - "MINUTES"
+ *  08 - VSR0.6 - "PAST"
+ *  09 - VSR1.0 - "TO"
  *
- *  10 - SR1.1 - "ONE"
- *  11 - SR1.2 - "TWO"
- *  12 - SR1.3 - "THREE"
- *  13 - SR1.4 - "FOUR"
- *  14 - SR1.5 - "FIVE"
- *  15 - SR1.6 - "SIX"
- *  16 - SR2.0 - "SEVEN"
- *  17 - SR2.1 - "EIGHT"
- *  18 - SR2.2 - "NINE"
- *  19 - SR2.3 - "TEN"
- *  20 - SR2.4 - "ELEVEN"
- *  21 - SR2.5 - "TWELVE"
- *  22 - SR2.6 - "OCLOCK"
+ *  10 - VSR1.1 - "ONE"
+ *  11 - VSR1.2 - "TWO"
+ *  12 - VSR1.3 - "THREE"
+ *  13 - VSR1.4 - "FOUR"
+ *  14 - VSR1.5 - "FIVE"
+ *  15 - VSR1.6 - "SIX"
+ *  16 - VSR2.0 - "SEVEN"
+ *  17 - VSR2.1 - "EIGHT"
+ *  18 - VSR2.2 - "NINE"
+ *  19 - VSR2.3 - "TEN"
+ *  20 - VSR2.4 - "ELEVEN"
+ *  21 - VSR2.5 - "TWELVE"
+ *  22 - VSR2.6 - "OCLOCK"
  */
 
-#define MTEN SR0.0 = 1
-#define HALF SR0.1 = 1
-#define QUARTER SR0.2 = 1
-#define TWENTY SR0.3 = 1
-#define MFIVE SR0.4 = 1
-#define MINUTES SR0.5 = 1
-#define PAST SR0.6 = 1
-#define PEW0 SR0.7 = 1
-#define TO SR1.0 = 1
-#define ONE SR1.1 = 1
-#define TWO SR1.2 = 1
-#define THREE SR1.3 = 1
-#define FOUR SR1.4 = 1
-#define HFIVE SR1.5 = 1
-#define SIX SR1.6 = 1
-#define PEW1 SR1.7 = 1
-#define SEVEN SR2.0 = 1
-#define EIGHT SR2.1 = 1
-#define NINE SR2.2 = 1
-#define HTEN SR2.3 = 1
-#define ELEVEN SR2.4 = 1
-#define TWELVE SR2.5 = 1
-#define OCLOCK SR2.6 = 1
-#define PEW2 SR2.7 = 1
+#define MTEN VSR0.0 = 1
+#define HALF VSR0.1 = 1
+#define QUARTER VSR0.2 = 1
+#define TWENTY VSR0.3 = 1
+#define MFIVE VSR0.4 = 1
+#define MINUTES VSR0.5 = 1
+#define PAST VSR0.6 = 1
+#define PEW0 VSR0.7 = 1
+#define TO VSR1.0 = 1
+#define ONE VSR1.1 = 1
+#define TWO VSR1.2 = 1
+#define THREE VSR1.3 = 1
+#define FOUR VSR1.4 = 1
+#define HFIVE VSR1.5 = 1
+#define SIX VSR1.6 = 1
+#define PEW1 VSR1.7 = 1
+#define SEVEN VSR2.0 = 1
+#define EIGHT VSR2.1 = 1
+#define NINE VSR2.2 = 1
+#define HTEN VSR2.3 = 1
+#define ELEVEN VSR2.4 = 1
+#define TWELVE VSR2.5 = 1
+#define OCLOCK VSR2.6 = 1
+#define PEW2 VSR2.7 = 1
  
 /* General */
 #define DATA_PORT       PORTC.0
 #define CLOCK_PORT      PORTC.1
 #define STROBE_PORT     PORTC.2
-#define MINUTES_BUTTON  PORTC.3
+#define MINUTES_BUTTON  PORTC.5
 #define HOURS_BUTTON    PORTC.4
 
 /* Functions */
+void increaseClock(void);
+void increaseClockByHour(void);
+//void decreaseClock(void);
 void shiftOut(char val);
+void shiftOutSingle(int b);
 void initPorts(void);
 void initTimer0Interrupt(void);
+void updateShiftRegisters(void);
+void updateView(void);
 void turnOffLeds(void);
 
 /* Timing */
-int state_minutes = 0;
-int state_hours = 0;
-int SR0, SR1, SR2; // shift register X
-int hour = 5;
-int minute = 55; 
-int second = 00;
+int unsigned postScaler;
+int unsigned postPostScaler;
+int unsigned state_minutes;
+int unsigned state_hours;
+int VSR0, VSR1, VSR2; // shift register X
 
 /**
  * Interrupt service routine
  */
 #pragma origin 4
-interrupt isr(void) {
+interrupt Timer0_ISR(void) {
     int_save_registers
-    // interrupt routine here
-    
-    turnOffLeds();
-    
-    // HOURS
-    switch (state_hours) {
-        case 1:
-            ONE
-            break;
-        case 2:
-            TWO
-            break;
-        case 3:
-            THREE
-            break;
-        case 4:
-            FOUR
-            break;
-        case 5:
-            HFIVE
-            break;
-        case 6:
-            SIX
-            break;
-        case 7:
-            SEVEN
-            break;
-        case 8:
-            EIGHT
-            break;
-        case 9:
-            NINE
-            break;
-        case 10:
-            HTEN
-            break;
-        case 11:
-            ELEVEN
-            break;
-        case 0:
-            TWELVE
-            // Eventual time adjustments here
-            break;
-        default:
-            PEW0
-    }
-    
-    // MINUTES
-    switch (state_minutes) {
-        case 0:
-            OCLOCK
-            break;
-        case 1:
-            MFIVE
-            PAST
-            break;
-        case 2:
-            MTEN
-            PAST
-            break;
-        case 3:
-            QUARTER
-            PAST
-            break;
-        case 4:
-            TWENTY
-            PAST
-            break;
-        case 5:
-            TWENTY
-            MFIVE
-            PAST
-            break;
-        case 6:
-            HALF
-            PAST
-            break;
-        case 7:
-            TWENTY
-            MFIVE
-            TO
-            break;
-        case 8:
-            TWENTY
-            TO
-            break;
-        case 9:
-            QUARTER
-            TO
-            break;
-        case 10:
-            MTEN
-            TO
-            break;
-        case 11:
-            MFIVE
-            TO
-            break;
-    }
-    
-    if ((state_minutes + 1) % 12 = 0) {
-        state_hours = (state_hours + 1) % 12;
-    }
-    state_minutes = (state_minutes + 1) % 12;
+	
+	postScaler += 1;
+	postScaler = postScaler % 61;
 
-    updateView();
-    
-    T0IF = 0; // clear interrupt flag
+	int delay;
+	delay = postScaler % 3;
+	// Read button input
+	if (HOURS_BUTTON && delay == 0) {
+		nop2();
+		increaseClockByHour();
+		turnOffLeds();
+		updateShiftRegisters();
+		updateView();
+		nop2();
+	}
+	
+	if (MINUTES_BUTTON && delay == 0) {
+		nop2();
+		increaseClock();
+		turnOffLeds();
+		updateShiftRegisters();
+		updateView();
+		nop2();
+	}
+
+	// Update clock
+	if (postScaler == 0) {
+		postPostScaler += 1;
+		postPostScaler = postPostScaler % 15;
+		if (postPostScaler == 0) {
+			increaseClock();
+			turnOffLeds();
+			updateShiftRegisters();
+			updateView();
+		}
+	}
+	
     int_restore_registers
+	T0IF = 0; // clear interrupt flag
 }
 
 /**
  * Main routine
  */
-void main( void)
-{
+void main(void) {
     initPorts();
     initTimer0Interrupt();
-    
+	postScaler = 0;
+	postPostScaler = 0;
+	
+	state_minutes = 0;
+	state_hours = 0;
+
     // global interrupt enable
     GIE = 1;
-
-    while(1) {
-        // poll the T0IF flag to see if TMR0 has overflowed
-        if (T0IF) {
-            second++;   // increment second variable by one
-            T0IF = 0;   // clear the T0IF flag
-        }
-
-        // Timer logic here
-    }
+	
+	while(1) {}
 }
 
 /**
@@ -229,8 +160,8 @@ void initPorts(void) {
     TRISC.0 = 0;
     TRISC.1 = 0;
     TRISC.2 = 0;
-    TRISC.3 = 0;
-    TRISC.4 = 0;
+    TRISC.4 = 1;
+	TRISC.5 = 1;
 }
 
 /**
@@ -238,18 +169,28 @@ void initPorts(void) {
  */
 void initTimer0Interrupt(void) {
     // prescaler is assigned to the Timer0 module
-    PSA = 0; 
-
+    //PSA = 0; 
     // prescaling 111 = 1:256
-    PS0 = 1; 
-    PS1 = 1;
-    PS2 = 1;
+    //PS0 = 1; 
+    //PS1 = 1;
+    //PS2 = 1;
+	OPTION = 7;
 
     // set timer value
-    TMR0 = 5;
+    TMR0 = 125;
 
     // enable timer0 overflow interrupt
     T0IE = 1;
+}
+
+/**
+ * Helper function for shiftOut.
+ */
+void shiftOutSingle(int b) {
+	DATA_PORT = b;
+	CLOCK_PORT = 1;
+	nop();
+	CLOCK_PORT = 0;
 }
 
 /**
@@ -258,21 +199,143 @@ void initTimer0Interrupt(void) {
  * to indicate that the bit is available.
  */
 void shiftOut(char val) {
-    int i;
-    for (i = 0; i < 8; i++)  {
-        DATA_PORT = !!(val & (1 << (7 - i))); // The double bang !! implicitly cast to bool: will it work?
+	shiftOutSingle(val.7);
+	shiftOutSingle(val.6);
+	shiftOutSingle(val.5);
+	shiftOutSingle(val.4);
+	shiftOutSingle(val.3);
+	shiftOutSingle(val.2);
+	shiftOutSingle(val.1);
+	shiftOutSingle(val.0);
+	
+	// NOT COMPILABLE
+    /*for (i = 7; i <= 0; i--)  {
+		mask = 1 << i;
+        DATA_PORT = val & mask;
+		
         CLOCK_PORT = 1;
+		nop();
         CLOCK_PORT = 0;      
-    }
+    }*/
+}
+
+/**
+ * Update shift register values
+ */
+void updateShiftRegisters(void) {
+    // HOURS
+	switch (state_hours) {
+		case 1:
+			ONE;
+			break;
+		case 2:
+			TWO;
+			break;
+		case 3:
+			THREE;
+			break;
+		case 4:
+			FOUR;
+			break;
+		case 5:
+			HFIVE;
+			break;
+		case 6:
+			SIX;
+			break;
+		case 7:
+			SEVEN;
+			break;
+		case 8:
+			EIGHT;
+			break;
+		case 9:
+			NINE;
+			break;
+		case 10:
+			HTEN;
+			break;
+		case 11:
+			ELEVEN;
+			break;
+		case 0:
+			TWELVE;
+			// Eventual time adjustments here
+			break;
+		default:
+			PEW0;
+	}
+	
+	// MINUTES
+	switch (state_minutes) {
+		case 0:
+			OCLOCK;
+			break;
+		case 1:
+			MFIVE;
+			MINUTES;
+			PAST;
+			break;
+		case 2:
+			MTEN;
+			MINUTES;
+			PAST;
+			break;
+		case 3:
+			QUARTER;
+			PAST;
+			break;
+		case 4:
+			TWENTY;
+			MINUTES;
+			PAST;
+			break;
+		case 5:
+			TWENTY;
+			MFIVE;
+			MINUTES;
+			PAST;
+			break;
+		case 6:
+			HALF;
+			PAST;
+			break;
+		case 7:
+			TWENTY;
+			MFIVE;
+			MINUTES;
+			TO;
+			break;
+		case 8:
+			TWENTY;
+			MINUTES;
+			TO;
+			break;
+		case 9:
+			QUARTER;
+			TO;
+			break;
+		case 10:
+			MTEN;
+			MINUTES;
+			TO;
+			break;
+		case 11:
+			MFIVE;
+			MINUTES;
+			TO;
+			break;
+	}
 }
 
 /**
  * Update time.
  */
 void updateView(void) {
-    shiftOut((char) SR0);
-    shiftOut((char) SR1);
-    shiftOut((char) SR2);
+    shiftOut((char) VSR2);
+	shiftOut((char) VSR1);
+	shiftOut((char) VSR0);
+    
     STROBE_PORT = 1;
     nop2();
     STROBE_PORT = 0;
@@ -282,8 +345,30 @@ void updateView(void) {
  * Power off all LEDS.
  */
 void turnOffLeds(void) {
-    SR0 = 0;
-    SR1 = 0;
-    SR2 = 0;
+    VSR0 = 0;
+    VSR1 = 0;
+    VSR2 = 0;
     updateView();
+}
+
+/**
+ * Increase clock state by one.
+ */
+void increaseClock(void) {
+	int unsigned temp = 0;
+    state_minutes += 1;
+	temp = state_minutes % 12;
+	if (temp == 0) {
+		state_hours += 1;
+		state_hours = state_hours % 12;
+	}
+	state_minutes = temp;
+}
+
+/**
+ * Increase clock state by one.
+ */
+void increaseClockByHour(void) {
+	state_hours += 1;
+	state_hours = state_hours % 12;
 }
