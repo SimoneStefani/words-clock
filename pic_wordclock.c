@@ -165,6 +165,7 @@ void main(void) {
     postScaler = 0;
     postPostScaler = 0;
     
+    // initial time
     state_minutes = 0;
     state_hours = 0;
 
@@ -193,7 +194,7 @@ void initTimer0Interrupt(void) {
         xxxx.0.xxx  assign prescaler to timer0 module
         xxxx.x.111  prescaling 1:256
     */
-    OPTION = 7;
+    OPTION = 0b00000111;
 
     // set timer value
     TMR0 = TIMERVALUE;
@@ -348,7 +349,7 @@ void updateShiftRegisters(void) {
 }
 
 /**
- * Update time.
+ * Update clock face to show new time.
  */
 void updateView(void) {
     shiftOut((char) VSR2);
@@ -361,7 +362,7 @@ void updateView(void) {
 }
 
 /**
- * Power off all LEDS.
+ * Power off all LEDs.
  */
 void turnOffLeds(void) {
     VSR0 = 0;
