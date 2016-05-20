@@ -94,45 +94,45 @@ int VSR0, VSR1, VSR2; // shift register X
 #pragma origin 4
 interrupt Timer0_ISR(void) {
     int_save_registers
-	
-	postScaler += 1;
-	postScaler = postScaler % 61;
+    
+    postScaler += 1;
+    postScaler = postScaler % 61;
 
-	int delay;
-	delay = postScaler % 3;
-	// Read button input
-	if (HOURS_BUTTON && delay == 0) {
-		nop2();
-		increaseClockByHour();
-		turnOffLeds();
-		updateShiftRegisters();
-		updateView();
-		nop2();
-	}
-	
-	if (MINUTES_BUTTON && delay == 0) {
-		nop2();
-		increaseClock();
-		turnOffLeds();
-		updateShiftRegisters();
-		updateView();
-		nop2();
-	}
+    int delay;
+    delay = postScaler % 3;
+    // Read button input
+    if (HOURS_BUTTON && delay == 0) {
+        nop2();
+        increaseClockByHour();
+        turnOffLeds();
+        updateShiftRegisters();
+        updateView();
+        nop2();
+    }
+    
+    if (MINUTES_BUTTON && delay == 0) {
+        nop2();
+        increaseClock();
+        turnOffLeds();
+        updateShiftRegisters();
+        updateView();
+        nop2();
+    }
 
-	// Update clock
-	if (postScaler == 0) {
-		postPostScaler += 1;
-		postPostScaler = postPostScaler % 15;
-		if (postPostScaler == 0) {
-			increaseClock();
-			turnOffLeds();
-			updateShiftRegisters();
-			updateView();
-		}
-	}
-	
+    // Update clock
+    if (postScaler == 0) {
+        postPostScaler += 1;
+        postPostScaler = postPostScaler % 15;
+        if (postPostScaler == 0) {
+            increaseClock();
+            turnOffLeds();
+            updateShiftRegisters();
+            updateView();
+        }
+    }
+    
     int_restore_registers
-	T0IF = 0; // clear interrupt flag
+    T0IF = 0; // clear interrupt flag
 }
 
 /**
@@ -141,16 +141,16 @@ interrupt Timer0_ISR(void) {
 void main(void) {
     initPorts();
     initTimer0Interrupt();
-	postScaler = 0;
-	postPostScaler = 0;
-	
-	state_minutes = 0;
-	state_hours = 0;
+    postScaler = 0;
+    postPostScaler = 0;
+    
+    state_minutes = 0;
+    state_hours = 0;
 
     // global interrupt enable
     GIE = 1;
-	
-	while(1) {}
+    
+    while(1) {}
 }
 
 /**
@@ -161,7 +161,7 @@ void initPorts(void) {
     TRISC.1 = 0;
     TRISC.2 = 0;
     TRISC.4 = 1;
-	TRISC.5 = 1;
+    TRISC.5 = 1;
 }
 
 /**
@@ -174,7 +174,7 @@ void initTimer0Interrupt(void) {
     //PS0 = 1; 
     //PS1 = 1;
     //PS2 = 1;
-	OPTION = 7;
+    OPTION = 7;
 
     // set timer value
     TMR0 = 125;
@@ -187,10 +187,10 @@ void initTimer0Interrupt(void) {
  * Helper function for shiftOut.
  */
 void shiftOutSingle(int b) {
-	DATA_PORT = b;
-	CLOCK_PORT = 1;
-	nop();
-	CLOCK_PORT = 0;
+    DATA_PORT = b;
+    CLOCK_PORT = 1;
+    nop();
+    CLOCK_PORT = 0;
 }
 
 /**
@@ -199,22 +199,22 @@ void shiftOutSingle(int b) {
  * to indicate that the bit is available.
  */
 void shiftOut(char val) {
-	shiftOutSingle(val.7);
-	shiftOutSingle(val.6);
-	shiftOutSingle(val.5);
-	shiftOutSingle(val.4);
-	shiftOutSingle(val.3);
-	shiftOutSingle(val.2);
-	shiftOutSingle(val.1);
-	shiftOutSingle(val.0);
-	
-	// NOT COMPILABLE
+    shiftOutSingle(val.7);
+    shiftOutSingle(val.6);
+    shiftOutSingle(val.5);
+    shiftOutSingle(val.4);
+    shiftOutSingle(val.3);
+    shiftOutSingle(val.2);
+    shiftOutSingle(val.1);
+    shiftOutSingle(val.0);
+    
+    // NOT COMPILABLE
     /*for (i = 7; i <= 0; i--)  {
-		mask = 1 << i;
+        mask = 1 << i;
         DATA_PORT = val & mask;
-		
+        
         CLOCK_PORT = 1;
-		nop();
+        nop();
         CLOCK_PORT = 0;      
     }*/
 }
@@ -224,108 +224,108 @@ void shiftOut(char val) {
  */
 void updateShiftRegisters(void) {
     // HOURS
-	switch (state_hours) {
-		case 1:
-			ONE;
-			break;
-		case 2:
-			TWO;
-			break;
-		case 3:
-			THREE;
-			break;
-		case 4:
-			FOUR;
-			break;
-		case 5:
-			HFIVE;
-			break;
-		case 6:
-			SIX;
-			break;
-		case 7:
-			SEVEN;
-			break;
-		case 8:
-			EIGHT;
-			break;
-		case 9:
-			NINE;
-			break;
-		case 10:
-			HTEN;
-			break;
-		case 11:
-			ELEVEN;
-			break;
-		case 0:
-			TWELVE;
-			// Eventual time adjustments here
-			break;
-		default:
-			PEW0;
-	}
-	
-	// MINUTES
-	switch (state_minutes) {
-		case 0:
-			OCLOCK;
-			break;
-		case 1:
-			MFIVE;
-			MINUTES;
-			PAST;
-			break;
-		case 2:
-			MTEN;
-			MINUTES;
-			PAST;
-			break;
-		case 3:
-			QUARTER;
-			PAST;
-			break;
-		case 4:
-			TWENTY;
-			MINUTES;
-			PAST;
-			break;
-		case 5:
-			TWENTY;
-			MFIVE;
-			MINUTES;
-			PAST;
-			break;
-		case 6:
-			HALF;
-			PAST;
-			break;
-		case 7:
-			TWENTY;
-			MFIVE;
-			MINUTES;
-			TO;
-			break;
-		case 8:
-			TWENTY;
-			MINUTES;
-			TO;
-			break;
-		case 9:
-			QUARTER;
-			TO;
-			break;
-		case 10:
-			MTEN;
-			MINUTES;
-			TO;
-			break;
-		case 11:
-			MFIVE;
-			MINUTES;
-			TO;
-			break;
-	}
+    switch (state_hours) {
+        case 1:
+            ONE;
+            break;
+        case 2:
+            TWO;
+            break;
+        case 3:
+            THREE;
+            break;
+        case 4:
+            FOUR;
+            break;
+        case 5:
+            HFIVE;
+            break;
+        case 6:
+            SIX;
+            break;
+        case 7:
+            SEVEN;
+            break;
+        case 8:
+            EIGHT;
+            break;
+        case 9:
+            NINE;
+            break;
+        case 10:
+            HTEN;
+            break;
+        case 11:
+            ELEVEN;
+            break;
+        case 0:
+            TWELVE;
+            // Eventual time adjustments here
+            break;
+        default:
+            PEW0;
+    }
+    
+    // MINUTES
+    switch (state_minutes) {
+        case 0:
+            OCLOCK;
+            break;
+        case 1:
+            MFIVE;
+            MINUTES;
+            PAST;
+            break;
+        case 2:
+            MTEN;
+            MINUTES;
+            PAST;
+            break;
+        case 3:
+            QUARTER;
+            PAST;
+            break;
+        case 4:
+            TWENTY;
+            MINUTES;
+            PAST;
+            break;
+        case 5:
+            TWENTY;
+            MFIVE;
+            MINUTES;
+            PAST;
+            break;
+        case 6:
+            HALF;
+            PAST;
+            break;
+        case 7:
+            TWENTY;
+            MFIVE;
+            MINUTES;
+            TO;
+            break;
+        case 8:
+            TWENTY;
+            MINUTES;
+            TO;
+            break;
+        case 9:
+            QUARTER;
+            TO;
+            break;
+        case 10:
+            MTEN;
+            MINUTES;
+            TO;
+            break;
+        case 11:
+            MFIVE;
+            MINUTES;
+            TO;
+            break;
+    }
 }
 
 /**
@@ -333,8 +333,8 @@ void updateShiftRegisters(void) {
  */
 void updateView(void) {
     shiftOut((char) VSR2);
-	shiftOut((char) VSR1);
-	shiftOut((char) VSR0);
+    shiftOut((char) VSR1);
+    shiftOut((char) VSR0);
     
     STROBE_PORT = 1;
     nop2();
@@ -355,22 +355,22 @@ void turnOffLeds(void) {
  * Increase clock state by one.
  */
 void increaseClock(void) {
-	int unsigned temp = 0;
+    int unsigned temp = 0;
     state_minutes += 1;
-	temp = state_minutes % 12;
-	if (temp == 0) {
-		state_hours += 1;
-		state_hours = state_hours % 12;
-	}
-	state_minutes = temp;
+    temp = state_minutes % 12;
+    if (temp == 0) {
+        state_hours += 1;
+        state_hours = state_hours % 12;
+    }
+    state_minutes = temp;
 }
 
 /**
  * Increase clock state by one.
  */
 void increaseClockByHour(void) {
-	state_hours += 1;
-	state_hours = state_hours % 12;
+    state_hours += 1;
+    state_hours = state_hours % 12;
 }
 
 /*
@@ -402,8 +402,8 @@ void increaseClockByHour(void) {
  *            |            \/           | 
  *      RC2->-|STROBE    HCF4094     Vdd|---+5V
  *      RC0->-|DATA        OUTPUT ENABLE|---+5V
- *      RC1->-|CLOCK   			      Q5|->- 5B
- *       1B-<-|Q1	                  Q6|->- 6B
+ *      RC1->-|CLOCK                  Q5|->- 5B
+ *       1B-<-|Q1                     Q6|->- 6B
  *       2B-<-|Q2                     Q7|->- 7B
  *       3B-<-|Q3                     Q8|
  *       4B-<-|Q4                    Q's|
@@ -417,9 +417,9 @@ void increaseClockByHour(void) {
  *             ________  _________  
  *            |        \/        | 
  *       Q1->-|1B   ULN2003A   1C|->- LED0
- *       Q2->-|2B        	   2C|->- LED1
- *       Q3->-|3B   	       3C|->- LED2
- *       Q4->-|4B	           4C|->- LED3
+ *       Q2->-|2B              2C|->- LED1
+ *       Q3->-|3B              3C|->- LED2
+ *       Q4->-|4B              4C|->- LED3
  *       Q5->-|5B              5C|->- LED4
  *       Q6->-|6B              6C|->- LED5
  *       Q7->-|7B              7C|->- LED6
