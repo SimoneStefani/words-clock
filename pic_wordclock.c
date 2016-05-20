@@ -411,7 +411,7 @@ void increaseClockByHour(void) {
  *            |RC3                     RC2|->- STROBE
  *            |RC6                     RB4|->- BTN(min)
  *            |RC7                  RB5/Rx|
- *            |RB7/Tx                  RB6|-<- SW
+ *            |RB7/Tx                  RB6|
  *            |___________________________|
  *  
  * 
