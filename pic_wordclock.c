@@ -1,4 +1,16 @@
-/* B Knudsen Cc5x C-compiler - not ANSI-C */
+/*  
+ *  WORD CLOCK - pic_wordclock.c
+ *  ----------------------------
+ *  Tells the time using words.
+ *
+ *  by:
+ *  - Simone Stefani, @SimoneStefani
+ *  - Marcel Eschmann, @eschmar
+ *
+ *  Compiler:
+ *  B Knudsen Cc5x C-compiler - not ANSI-C
+ */
+
 #include "16F690.h"
 #include "int16Cxx.h"
 #pragma config |= 0x00D4
@@ -6,8 +18,6 @@
 /*
  *  CONFIGURATION
  *  -------------
- *
- *  0bxx.xxxxx.xxx.xxxxxxxxxx.x.00
  *
  *  00 - "IT" - Hardwired
  *  01 - "IS" - Hardwired
@@ -37,42 +47,45 @@
  *  22 - VSR2.6 - "OCLOCK"
  */
 
-#define MTEN VSR0.0 = 1
-#define HALF VSR0.1 = 1
+#define MTEN    VSR0.0 = 1
+#define HALF    VSR0.1 = 1
 #define QUARTER VSR0.2 = 1
-#define TWENTY VSR0.3 = 1
-#define MFIVE VSR0.4 = 1
+#define TWENTY  VSR0.3 = 1
+#define MFIVE   VSR0.4 = 1
 #define MINUTES VSR0.5 = 1
-#define PAST VSR0.6 = 1
-#define PEW0 VSR0.7 = 1
-#define TO VSR1.0 = 1
-#define ONE VSR1.1 = 1
-#define TWO VSR1.2 = 1
-#define THREE VSR1.3 = 1
-#define FOUR VSR1.4 = 1
-#define HFIVE VSR1.5 = 1
-#define SIX VSR1.6 = 1
-#define PEW1 VSR1.7 = 1
-#define SEVEN VSR2.0 = 1
-#define EIGHT VSR2.1 = 1
-#define NINE VSR2.2 = 1
-#define HTEN VSR2.3 = 1
-#define ELEVEN VSR2.4 = 1
-#define TWELVE VSR2.5 = 1
-#define OCLOCK VSR2.6 = 1
-#define PEW2 VSR2.7 = 1
+#define PAST    VSR0.6 = 1
+#define PEW0    VSR0.7 = 1
+#define TO      VSR1.0 = 1
+#define ONE     VSR1.1 = 1
+#define TWO     VSR1.2 = 1
+#define THREE   VSR1.3 = 1
+#define FOUR    VSR1.4 = 1
+#define HFIVE   VSR1.5 = 1
+#define SIX     VSR1.6 = 1
+#define PEW1    VSR1.7 = 1
+#define SEVEN   VSR2.0 = 1
+#define EIGHT   VSR2.1 = 1
+#define NINE    VSR2.2 = 1
+#define HTEN    VSR2.3 = 1
+#define ELEVEN  VSR2.4 = 1
+#define TWELVE  VSR2.5 = 1
+#define OCLOCK  VSR2.6 = 1
+#define PEW2    VSR2.7 = 1
  
-/* General */
+/**
+ * Shift Register Pins
+ */
 #define DATA_PORT       PORTC.0
 #define CLOCK_PORT      PORTC.1
 #define STROBE_PORT     PORTC.2
 #define MINUTES_BUTTON  PORTC.5
 #define HOURS_BUTTON    PORTC.4
 
-/* Functions */
+/**
+ * Functions
+ */
 void increaseClock(void);
 void increaseClockByHour(void);
-//void decreaseClock(void);
 void shiftOut(char val);
 void shiftOutSingle(int b);
 void initPorts(void);
@@ -81,9 +94,15 @@ void updateShiftRegisters(void);
 void updateView(void);
 void turnOffLeds(void);
 
-/* Timing */
+/**
+ * Timing / Variables
+ */
+ #define TIMERVALUE     125
+ #define POSTSCALER1    61
+ #define POSTSCALER2    15
 int unsigned postScaler;
 int unsigned postPostScaler;
+
 int unsigned state_minutes;
 int unsigned state_hours;
 int VSR0, VSR1, VSR2; // shift register X
@@ -96,11 +115,12 @@ interrupt Timer0_ISR(void) {
     int_save_registers
     
     postScaler += 1;
-    postScaler = postScaler % 61;
+    postScaler = postScaler % POSTSCALER1;
 
     int delay;
     delay = postScaler % 3;
-    // Read button input
+
+    // Read hour button input
     if (HOURS_BUTTON && delay == 0) {
         nop2();
         increaseClockByHour();
@@ -110,6 +130,7 @@ interrupt Timer0_ISR(void) {
         nop2();
     }
     
+    // Read minute button input
     if (MINUTES_BUTTON && delay == 0) {
         nop2();
         increaseClock();
@@ -122,7 +143,7 @@ interrupt Timer0_ISR(void) {
     // Update clock
     if (postScaler == 0) {
         postPostScaler += 1;
-        postPostScaler = postPostScaler % 15;
+        postPostScaler = postPostScaler % POSTSCALER2;
         if (postPostScaler == 0) {
             increaseClock();
             turnOffLeds();
@@ -157,27 +178,25 @@ void main(void) {
  * Initialise PIC16F690 general purpose I/O ports.
  */
 void initPorts(void) {
-    TRISC.0 = 0;
-    TRISC.1 = 0;
-    TRISC.2 = 0;
-    TRISC.4 = 1;
-    TRISC.5 = 1;
+    TRISC.0 = 0; // DATA
+    TRISC.1 = 0; // CLOCK
+    TRISC.2 = 0; // STROBE
+    TRISC.4 = 1; // BTN(min)
+    TRISC.5 = 1; // BTN(h)
 }
 
 /**
  * Initialise timer0 with interrupts
  */
 void initTimer0Interrupt(void) {
-    // prescaler is assigned to the Timer0 module
-    //PSA = 0; 
-    // prescaling 111 = 1:256
-    //PS0 = 1; 
-    //PS1 = 1;
-    //PS2 = 1;
+    /* 
+        xxxx.0.xxx  assign prescaler to timer0 module
+        xxxx.x.111  prescaling 1:256
+    */
     OPTION = 7;
 
     // set timer value
-    TMR0 = 125;
+    TMR0 = TIMERVALUE;
 
     // enable timer0 overflow interrupt
     T0IE = 1;
