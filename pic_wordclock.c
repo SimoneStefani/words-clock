@@ -386,10 +386,10 @@ void increaseClockByHour(void) {
  *            |RA5               RA0/(PGD)|
  *            |RA4/AN3   AN1/REF/RA1/(PGC)|
  *            |RA3/!MCLR/(Vpp) RA2/AN2/INT|
- *  BTN (h)-<-|RC5/CCP                 RC0|->- DATA
+ *  BTN(h) -<-|RC5/CCP                 RC0|->- DATA
  *            |RC4                     RC1|->- CLOCK
  *            |RC3                     RC2|->- STROBE
- *            |RC6                     RB4|->- BTN (min)
+ *            |RC6                     RB4|->- BTN(min)
  *            |RC7                  RB5/Rx|
  *            |RB7/Tx                  RB6|-<- SW
  *            |___________________________|
@@ -400,13 +400,13 @@ void increaseClockByHour(void) {
  * 
  *             ____________  ____________  
  *            |            \/           | 
- *      RC2->-|STROBE    HCF4094     Vdd|---+5V
- *      RC0->-|DATA        OUTPUT ENABLE|---+5V
- *      RC1->-|CLOCK                  Q5|->- 5B
- *       1B-<-|Q1                     Q6|->- 6B
- *       2B-<-|Q2                     Q7|->- 7B
- *       3B-<-|Q3                     Q8|
- *       4B-<-|Q4                    Q's|
+ *     RC2 ->-|STROBE    HCF4094     Vdd|---+5V
+ *     RC0 ->-|DATA        OUTPUT ENABLE|---+5V
+ *     RC1 ->-|CLOCK                  Q5|->- 5B
+ *      1B -<-|Q1                     Q6|->- 6B
+ *      2B -<-|Q2                     Q7|->- 7B
+ *      3B -<-|Q3                     Q8|
+ *      4B -<-|Q4                    Q's|
  *      GND---|Vss                    Qs|->- DATA
  *            |_________________________|
  *  
@@ -416,13 +416,13 @@ void increaseClockByHour(void) {
  * 
  *             ________  _________  
  *            |        \/        | 
- *       Q1->-|1B   ULN2003A   1C|->- LED0
- *       Q2->-|2B              2C|->- LED1
- *       Q3->-|3B              3C|->- LED2
- *       Q4->-|4B              4C|->- LED3
- *       Q5->-|5B              5C|->- LED4
- *       Q6->-|6B              6C|->- LED5
- *       Q7->-|7B              7C|->- LED6
+ *      Q1 ->-|1B   ULN2003A   1C|->- LED0
+ *      Q2 ->-|2B              2C|->- LED1
+ *      Q3 ->-|3B              3C|->- LED2
+ *      Q4 ->-|4B              4C|->- LED3
+ *      Q5 ->-|5B              5C|->- LED4
+ *      Q6 ->-|6B              6C|->- LED5
+ *      Q7 ->-|7B              7C|->- LED6
  *            |E              COM|
  *            |__________________|
  */
