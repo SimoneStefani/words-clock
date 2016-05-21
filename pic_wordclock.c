@@ -415,12 +415,12 @@ void increaseClockByHour(void) {
  *            |___________________________|
  *  
  * 
- *  HCF4094
+ *  CD4094BE
  *  8-Stage Shift-AND-Store Bus Register
  * 
  *             ____________  ____________  
  *            |            \/           | 
- *     RC2 ->-|STROBE    HCF4094     Vdd|---+5V
+ *     RC2 ->-|STROBE   CD4094BE     Vdd|---+5V
  *     RC0 ->-|DATA        OUTPUT ENABLE|---+5V
  *     RC1 ->-|CLOCK                  Q5|->- 5B
  *      1B -<-|Q1                     Q6|->- 6B
