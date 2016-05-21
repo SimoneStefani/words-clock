@@ -25,7 +25,7 @@
  *  02 - VSR0.0 - "TEN"
  *  03 - VSR0.1 - "HALF"
  *  04 - VSR0.2 - "QUARTER"
- *  05 - VSR0.3 - "TWENTZ"
+ *  05 - VSR0.3 - "TWENTY"
  *  06 - VSR0.4 - "FIVE"
  *
  *  07 - VSR0.5 - "MINUTES"
@@ -97,9 +97,9 @@ void turnOffLeds(void);
 /**
  * Timing / Variables
  */
- #define TIMERVALUE     125
- #define POSTSCALER1    61
- #define POSTSCALER2    15
+#define TIMERVALUE  125
+#define POSTSCALER1 61
+#define POSTSCALER2 15
 int unsigned postScaler;
 int unsigned postPostScaler;
 
