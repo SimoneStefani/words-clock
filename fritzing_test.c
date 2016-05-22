@@ -79,18 +79,18 @@ int VSR0, VSR1, VSR2; // shift register X
  */
 void main(void) {
     initPorts();
-	
+    
     while(1) {
-		TWELVE;
-		OCLOCK;
-		updateView();
-		PORTB.5 = 0;
-		delay10(100);
+        TWELVE;
+        OCLOCK;
+        updateView();
+        PORTB.5 = 0;
+        delay10(100);
 
-		turnOffLeds();
-		PORTB.5 = 1;
-		delay10(100);
-	}
+        turnOffLeds();
+        PORTB.5 = 1;
+        delay10(100);
+    }
 }
 
 /**
@@ -100,7 +100,7 @@ void initPorts(void) {
     TRISC.0 = 0; // DATA
     TRISC.1 = 0; // CLOCK
     TRISC.2 = 0; // STROBE
-	TRISB.5 = 0; // TEST LED
+    TRISB.5 = 0; // TEST LED
 }
 
 
